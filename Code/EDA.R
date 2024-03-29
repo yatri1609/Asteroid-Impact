@@ -76,7 +76,7 @@ plot_ly(data_impacts, x=~Asteroid.Diameter..km., y=~Possible.Impacts,
          xaxis = list(title = "Asteroid Diameter in km"),
          yaxis = list(title = "Possible Impacts"))
 
-##### Orbit data classification 
+##### Orbit data classification #####
 asteroid_category_count <- data_orbits %>%
   group_by(Object.Classification) %>%
   summarise(count = n())
@@ -85,4 +85,3 @@ plot_ly(asteroid_category_count, x=~Object.Classification, y=~count, type='bar')
   layout(title = "Asteroids per Classification",
          xaxis = list(title = "Asteroid Classification"),
          yaxis = list(title = "Number of Asteroids"))
-
