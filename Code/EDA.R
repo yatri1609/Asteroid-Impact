@@ -4,6 +4,7 @@ library(tidyverse)
 library(ggplot2)
 library(plotly)
 library(corrplot)
+library(webshot)
 
 #import processed files
 data_impacts <- read.csv("./Data/processed_impacts.csv", header=TRUE)
@@ -21,14 +22,15 @@ data_impacts_long <- data_impacts %>%
   select(Object.Name,"Asteroid.Diameter..km.*100",Asteroid.Magnitude,Asteroid.Velocity) %>%
   pivot_longer(cols = -Object.Name, names_to = "Metric", values_to = "Value")
 
-plot_ly(data_impacts_long, x = ~Value, y = ~reorder(Object.Name, Value), 
+AsteroidFeaturesByObject <- plot_ly(data_impacts_long, x = ~Value, y = ~reorder(Object.Name, Value), 
         color = ~Metric, type = 'bar', orientation = 'h') %>%
   layout(yaxis = list(title = 'Asteroids'),
-         xaxis = list(title = 'Percentage of Asteroids'),
+         xaxis = list(title = 'Metrics'),
          barmode = 'stack',
-         title = 'Percentage of Asteroid Names',
+         title = 'Asteroid features by Object',
          legend = list(title = list(text = 'Metric')))
 
+AsteroidFeaturesByObject
 
 ##### Asteroid Impact Risk by Year #####
 asteroid_counts <- data_impacts %>%
@@ -51,8 +53,8 @@ average_impact <- data_impacts %>%
 
 plot_ly(average_impact, x = ~Period.Start, y = ~Average_Cumulative_Impact_Probability, 
         type = 'scatter', mode = 'lines+markers') %>%
-  layout(title = "Average Cumulative Impact Probability by Period Start",
-         xaxis = list(title = "Period Start"),
+  layout(title = "Average Cumulative Impact Probability by Year",
+         xaxis = list(title = "Year"),
          yaxis = list(title = "Average Cumulative Impact Probability"))
 
 ##### Possible Impacts vs Asteroid features #####
@@ -74,4 +76,13 @@ plot_ly(data_impacts, x=~Asteroid.Diameter..km., y=~Possible.Impacts,
          xaxis = list(title = "Asteroid Diameter in km"),
          yaxis = list(title = "Possible Impacts"))
 
+##### Orbit data classification 
+asteroid_category_count <- data_orbits %>%
+  group_by(Object.Classification) %>%
+  summarise(count = n())
+
+plot_ly(asteroid_category_count, x=~Object.Classification, y=~count, type='bar') %>%
+  layout(title = "Asteroids per Classification",
+         xaxis = list(title = "Asteroid Classification"),
+         yaxis = list(title = "Number of Asteroids"))
 
