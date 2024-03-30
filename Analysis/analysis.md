@@ -1,8 +1,6 @@
-During which year is Earth at the highest risk of an asteroid impact? 
+# Modeling Asteroid Impact based on its Features
 
-How do asteroid impact predictions change over time? 
 
-Which possible asteroid impact would be the most devastating, given the asteroid's size and speed?\
 
 Using "Period.Start" in one analysis and "Period.End" in another can be strategic and intentional, based on the specific insights or trends you are aiming to uncover within your dataset, especially in contexts like asteroid impact risk analysis. Here's why differentiating between these two might be meaningful:
 
