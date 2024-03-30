@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_sc
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVC
 import numpy as np
+import seaborn as sns
 
 # Load the dataset
 file_path = '../Data/processed_orbits.csv'
@@ -22,11 +23,17 @@ label_encoder = LabelEncoder()
 asteroid_data_cleaned['Object.Classification'] = label_encoder.fit_transform(
     asteroid_data_cleaned['Object.Classification'])
 
+# Plot correlation heatmap for the impact data
+asteroid_data_values = asteroid_data_cleaned.drop(columns=['Object.Name'])  # Features
+colormap = plt.cm.viridis
+sns.heatmap(asteroid_data_values.corr(), cmap=colormap, annot=True)
+plt.show()
+
 # Split the data into features and target variable
 X = asteroid_data_cleaned.drop(columns=['Object.Name', 'Object.Classification'])  # Features
 y = asteroid_data_cleaned['Object.Classification']  # Target variable
 
-# 3. Split the Data into Training and Testing Sets
+# Split the Data into Training and Testing Sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
