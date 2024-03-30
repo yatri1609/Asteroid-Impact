@@ -4,6 +4,7 @@ library(tidyverse)
 library(ggplot2)
 library(plotly)
 library(corrplot)
+library(webshot)
 
 #import processed files
 data_impacts <- read.csv("./Data/processed_impacts.csv", header=TRUE)
@@ -17,18 +18,22 @@ head(data_orbits)
 
 ##### Asteroid features by object name #####
 data_impacts_long <- data_impacts %>%
-  mutate("Asteroid.Diameter..km.*100" = Asteroid.Diameter..km.*100) %>%
-  select(Object.Name,"Asteroid.Diameter..km.*100",Asteroid.Magnitude,Asteroid.Velocity) %>%
-  pivot_longer(cols = -Object.Name, names_to = "Metric", values_to = "Value")
+  mutate("Estimated.Diameter..km.*100" = Estimated.Diameter..km.*100) %>%
+  select(Object.Designation..,"Estimated.Diameter..km.*100",H..mag.,Vinfinity..km.s.) %>%
+  pivot_longer(cols = -Object.Designation.., names_to = "Metric", values_to = "Value")
 
-plot_ly(data_impacts_long, x = ~Value, y = ~reorder(Object.Name, Value), 
-        color = ~Metric, type = 'bar', orientation = 'h') %>%
+AsteroidFeaturesByObject <- plot_ly(data_impacts_long, 
+                                    x = ~Value, 
+                                    y = ~reorder(Object.Designation.., Value), 
+                                    color = ~Metric, type = 'bar', 
+                                    orientation = 'h') %>%
   layout(yaxis = list(title = 'Asteroids'),
-         xaxis = list(title = 'Percentage of Asteroids'),
+         xaxis = list(title = 'Metrics'),
          barmode = 'stack',
-         title = 'Percentage of Asteroid Names',
+         title = 'Asteroid features by Object',
          legend = list(title = list(text = 'Metric')))
 
+AsteroidFeaturesByObject
 
 ##### Asteroid Impact Risk by Year #####
 asteroid_counts <- data_impacts %>%
@@ -47,31 +52,44 @@ plot_ly(asteroid_counts, x = ~Period.End, y = ~count, type = 'bar',
 ##### Average Cumulative Impact Probability by Period Start #####
 average_impact <- data_impacts %>%
   group_by(Period.Start) %>%
-  summarise(Average_Cumulative_Impact_Probability = mean(Cumulative.Impact.Probability, na.rm = TRUE))
+  summarise(Average_Cumulative_Impact_Probability = mean(Impact.Probability..cumulative., na.rm = TRUE))
 
 plot_ly(average_impact, x = ~Period.Start, y = ~Average_Cumulative_Impact_Probability, 
         type = 'scatter', mode = 'lines+markers') %>%
-  layout(title = "Average Cumulative Impact Probability by Period Start",
-         xaxis = list(title = "Period Start"),
+  layout(title = "Average Cumulative Impact Probability by Year",
+         xaxis = list(title = "Year"),
          yaxis = list(title = "Average Cumulative Impact Probability"))
 
 ##### Possible Impacts vs Asteroid features #####
-plot_ly(data_impacts, x=~Asteroid.Velocity, y=~Possible.Impacts,
+plot_ly(data_impacts, x=~Vinfinity..km.s., y=~Potential.Impacts..,
         type='scatter', mode='markers') %>%
   layout(title = "Possible Impacts by Asteroid Velocity",
          xaxis = list(title = "Asteroid Velocity in km/s"),
          yaxis = list(title = "Possible Impacts"))
 
-plot_ly(data_impacts, x=~Asteroid.Magnitude, y=~Possible.Impacts,
+plot_ly(data_impacts, x=~H..mag., y=~Potential.Impacts..,
         type='scatter', mode='markers') %>%
   layout(title = "Possible Impacts by Asteroid Magnitude",
          xaxis = list(title = "Asteroid Magnitude"),
          yaxis = list(title = "Possible Impacts"))
 
-plot_ly(data_impacts, x=~Asteroid.Diameter..km., y=~Possible.Impacts,
+plot_ly(data_impacts, x=~Estimated.Diameter..km., y=~Potential.Impacts..,
         type='scatter', mode='markers') %>%
   layout(title = "Possible Impacts by Asteroid Diameter",
          xaxis = list(title = "Asteroid Diameter in km"),
          yaxis = list(title = "Possible Impacts"))
 
+##### Orbit data classification #####
+asteroid_category_count <- data_orbits %>%
+  group_by(Object.Classification) %>%
+  summarise(count = n()) %>%
+  mutate(color = ifelse(grepl("Hazard", Object.Classification), "red", "lightblue"))
 
+plot_ly(asteroid_category_count, x=~Object.Classification, y=~count, 
+        type='bar', marker=list(color=~color)) %>%
+  layout(title = "Asteroids per Classification",
+         xaxis = list(title = "Asteroid Classification"),
+         yaxis = list(title = "Number of Asteroids"))
+
+#get the unique classification name
+unique(data_orbits$Object.Classification)
